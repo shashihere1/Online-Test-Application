@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>onlinetest</title>
+    <style>
+      /* Same CSS as before */
+      body {
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(to right, #000000, #434343);
+        padding: 10px;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+      }
+      .form-container {
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      p {
+        font-size: 14px;
+        color: #666;
+      }
+      .input-group {
+        margin-bottom: 15px;
+        text-align: left;
+        position: relative;
+        width: 100%;
+      }
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+      }
+      .input-group input {
+        width: 100%;
+        padding: 10px;
+        padding-right: 35px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .error-message {
+        color: red;
+        margin-top: 10px;
+      }
+      .eye-icon {
+        position: absolute;
+        right: 5px;
+        top: 70%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 18px;
+        color: #333;
+      }
+    </style>
+    <!-- Add EmailJS SDK -->
+            <script type="text/javascript"
+                src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+          </script>
+          <script type="text/javascript">
+          (function(){
+              emailjs.init({
+                publicKey: "C1hp8Nwn9nt9mvFlx",
+              });
+          })();
+        </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      // Firebase SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  //import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_clefQiG_4H6_WN6WyMkm7rxOoug49KI",
+    authDomain: "online-test-application-ff346.firebaseapp.com",
+    projectId: "online-test-application-ff346",
+    storageBucket: "online-test-application-ff346.firebasestorage.app",
+    messagingSenderId: "869512855376",
+    appId: "1:869512855376:web:6825c311cbf445ded23655",
+    measurementId: "G-MGV8WFY78L"
+  };
+ // const app = initializeApp(firebaseConfig);
+ // const analytics = getAnalytics(app);
+
+
+    //   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+    //   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
+    //   import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js';
+
+    //   const firebaseConfig = {
+    //     apiKey: "AIzaSyCnwc6_FAzzEjJVj98wdggOlwpA5UfmiFU",
+    //     authDomain: "onlinetest-practice.firebaseapp.com",
+    //     projectId: "onlinetest-practice",
+    //     storageBucket: "onlinetest-practice.appspot.com",
+    //     messagingSenderId: "1032776077674",
+    //     appId: "1:1032776077674:web:1f6c2f97ed2fef10a01513",
+    //     measurementId: "G-7SWJJ5XZYW"
+    //   };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const root = document.getElementById('root');
+      let isLogin = true;
+      let isForgotPassword = false;
+      let otp = '';
+
+      function renderForm() {
+        root.innerHTML = `
+          <div class="container">
+            <div class="form-container">
+              <h1>${isLogin ? (isForgotPassword ? 'Forgot Password' : 'Welcome Back!') : 'Join Us Today!'}</h1>
+              <p>${isLogin ? (isForgotPassword ? 'Reset your password' : 'Login to your account') : 'Create an account'}</p>
+              <form id="authForm">
+                ${isForgotPassword ? `
+                  <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="forgotEmail" required />
+                  </div>
+                  <div class="input-group otp-group" style="display: none;">
+                    <label>Enter OTP</label>
+                    <input type="text" id="otpInput" />
+                  </div>
+                  <div class="input-group new-password-group" style="display: none;">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" />
+                  </div>
+                  <button type="submit" id="sendOtpButton">Send OTP</button>
+                ` : `
+                  ${!isLogin ? `
+                    <div class="input-group">
+                      <label>Username</label>
+                      <input type="text" id="username" required />
+                    </div>
+                  ` : ''}
+                  <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required />
+                  </div>
+                  <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required />
+                    <span class="eye-icon" id="togglePassword">👁️</span>
+                  </div>
+                  <button type="submit">${isLogin ? 'Login' : 'Sign Up'}</button>
+                `}
+                <p class="error-message" id="errorMessage"></p>
+              </form>
+              ${isLogin && !isForgotPassword ? '<p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>' : ''}
+              <p>
+                ${isLogin ? (!isForgotPassword ? 'Not registered? <a href="#" id="toggleForm">Sign up</a>' : '') : 'Already have an account? <a href="#" id="toggleForm">Login</a>'}
+              </p>
+            </div>
+          </div>
+        `;
+    
+        if (!isForgotPassword) {
+          document.getElementById('authForm').onsubmit = isLogin ? handleSignIn : handleSignUp;
+      } else {
+          document.getElementById('authForm').onsubmit = handleForgotPassword;
+      }
+  
+      document.getElementById('toggleForm')?.addEventListener('click', toggleForm);
+      document.getElementById('togglePassword')?.addEventListener('click', togglePasswordVisibility);
+      document.getElementById('forgotPasswordLink')?.addEventListener('click', handleForgotPasswordLink);
+  }
+  
+  function toggleForm(e) {
+      e.preventDefault();
+      isLogin = !isLogin;
+      isForgotPassword = false;
+      renderForm();
+  }
+  
+  function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+  }
+  
+  function handleForgotPasswordLink(e) {
+      e.preventDefault();
+      isForgotPassword = true;
+      renderForm();
+  }
+  
+  function handleSignUp(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const username = document.getElementById('username').value;
+  
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+          await setDoc(doc(db, 'users', user.uid), {
+            username,
+            email,
+            password
+            //createdAt: new Date()
+          });
+          alert('Sign up successful!');
+          isLogin = true;
+          renderForm();
+        })
+        .catch((error) => {
+          document.getElementById('errorMessage').innerText = error.message;
+        });
+  }
+  
+  function handleSignIn(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            // User successfully logged in
+            alert('Login successful!');
+            
+            // Store the user's email in localStorage
+            localStorage.setItem('userEmail', email);
+            
+            // Redirect to quiz.html after successful login
+            window.location.href = 'quiz.html';
+        })
+        .catch((error) => {
+            document.getElementById('errorMessage').innerText = error.message;
+        });
+}
+
+  
+  function handleForgotPassword(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value;
+      const otpInput = document.getElementById('otpInput').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const otpGroup = document.querySelector('.otp-group');
+      const newPasswordGroup = document.querySelector('.new-password-group');
+  
+      if (!otpGroup.style.display || otpGroup.style.display === 'none') {
+          // Sending OTP logic
+          otp = generateOtp();
+          sendOTPEmail(email, otp)
+            .then(() => {
+              alert('OTP sent!');
+              otpGroup.style.display = 'block';
+              newPasswordGroup.style.display = 'block';
+              document.getElementById('sendOtpButton').innerText = 'Reset Password';
+            })
+            .catch((error) => {
+              document.getElementById('errorMessage').innerText = error.message;
+            });
+      } else {
+          // Verifying OTP and resetting password
+          if (otpInput === otp) {
+              resetPassword(email, newPassword);
+          } else {
+              document.getElementById('errorMessage').innerText = 'Incorrect OTP!';
+          }
+      }
+  }
+  
+  function generateOtp() {
+      return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  }
+  
+  function sendOTPEmail(email, generatedOtp) {
+      // Define the email parameters
+      const templateParams = {
+          user_email: email, // The recipient's email address
+          otp: generatedOtp, // The generated OTP
+      };
+  
+      // Send the email using EmailJS
+      return emailjs.send("service_eejsldd", "template_cy2y2al", templateParams)
+        .then(function(response) {
+          console.log('OTP sent successfully!', response.status, response.text);
+
+          // Print the OTP and recipient email for confirmation
+        console.log('Sent to:', templateParams.user_email);
+        console.log('OTP:', templateParams.otp);
+        })
+        .catch(function(error) {
+          console.log('Failed to send OTP.', error);
+        });
+  }
+  
+  function resetPassword(email, newPassword) {
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          alert('Password reset successful!');
+          isForgotPassword = false;
+          isLogin = true;
+          renderForm();
+        })
+        .catch((error) => {
+          document.getElementById('errorMessage').innerText = error.message;
+        });
+  }
+  
+  // Initial render
+  renderForm();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Quiz App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        min-height: 100vh;
+        background: linear-gradient(to right, #000000, #434343);
+        overflow-y: auto; /* Enable vertical scrolling */
+      }
+      
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 600px;
+      }
+      
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+      
+      .subject-button {
+        flex: 1;
+        margin: 5px;
+        padding: 15px;
+        background-color: lightgreen;
+        color: white;
+        text-align: center;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      
+      .subject-button:hover {
+        background-color: #32cd32;
+      }
+      
+      .quiz-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto; /* Allow scrolling within the quiz container */
+      }
+      
+      #questionImage {
+        max-width: 100%;
+        max-height: 60vh;
+        display: block;
+        margin: 0 auto;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      
+      .options div {
+        margin-bottom: 10px;
+      }
+      
+      .options input[type="radio"] {
+        margin-right: 10px;
+      }
+      
+      .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      
+      .navigation-buttons button {
+        flex: 1;
+        margin: 0 5px;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      
+      .navigation-buttons button:hover {
+        background-color: #0056b3;
+      }
+      
+      .countdown-container {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 1.2rem;
+        color: red;
+      }
+      
+      .footer {
+        margin-top: 20px;
+        font-size: 1rem;
+        color: red;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-align: center;
+        width: 90%;
+        max-width: 500px;
+      }
+      
+      /* Responsive Styles */
+      @media (max-width: 768px) {
+        .button-container {
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: space-between;
+        }
+      
+        .subject-button {
+          flex-basis: 33%;
+          
+        }
+      
+        .quiz-container {
+          padding: 15px;
+        }
+      
+        h2 {
+          font-size: 1.3rem;
+        }
+      
+        .navigation-buttons {
+          flex-direction: column;
+        }
+      
+        .navigation-buttons button {
+          margin: 8px 0;
+        }
+      
+        .countdown-container {
+          font-size: 1rem;
+        }
+      
+        .footer {
+          font-size: 0.9rem;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .navigation-buttons button {
+          margin: 7px 0;
+          padding: 12px;
+          font-size: 0.9rem;
+        }
+      
+        .quiz-container {
+          max-height: 70vh; /* Reduce max-height for smaller screens */
+          overflow-y: auto;
+        }
+      }
+      
+    </style>
+    <script type="module">
+      // Firebase SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+      import { getAuth } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCnwc6_FAzzEjJVj98wdggOlwpA5UfmiFU",
+        authDomain: "onlinetest-practice.firebaseapp.com",
+        projectId: "onlinetest-practice",
+        storageBucket: "onlinetest-practice.appspot.com",
+        messagingSenderId: "1032776077674",
+        appId: "1:1032776077674:web:1f6c2f97ed2fef10a01513",
+        measurementId: "G-7SWJJ5XZYW"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const questions = [
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b1q10.png" },  //botany
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b1q22.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b1q23.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b1q25.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b1q28.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b2q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b2q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b2q3.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b2q17.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b2q39.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b2q40.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b3q4.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b3q13.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b3q26.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b4q9.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b4q56.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b4q57.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b4q76.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b4q77.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "b4q102.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b4q109.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b5q8.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b5q9.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b5q37.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b5q56.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b5q78.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b6q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "b6q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b6q25.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "b6q26.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "b6q81.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z1q1.png" },   //zoology
+    { options: ["a", "b", "c", "d"], answer: 1, image: "z1q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z1q3.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "z1q61.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z1q4.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "z2q5.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "z2q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z2q22.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z2q39.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z2q40.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z3q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "z3q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z3q48.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "z3q49.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "z3q50.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z3q51.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z4q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z4q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "z4q15.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z4q16.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z4q35.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z4q46.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z5q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z5q3.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z5q4.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "z5q5.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z5q6.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z5q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z5q8.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "z5q68.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "z5q70.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c1q1.png" },    //chemistry
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c1q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c1q9.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c2q6.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c2q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c2q8.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c2q23.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c2q79.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c2q91.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c2q92.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c3q6.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c3q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c3q38.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c3q46.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c4q4.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c4q5.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c4q34.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c4q44.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c4q45.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c5q2.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c5q16.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c5q26.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c5q23.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c5q38.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c5q39.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c5q53.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c5q83.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c5q94.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c6q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c6q17.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c6q33.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c6q45.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c6q46.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c7q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "c7q17.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "c7q18.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "c7q19.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "c7q28.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p2q24.png" },  //physics
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p2q46.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p3q8.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p3q19.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p3q15.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p3q37.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p3q38.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p4q31.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p4q33.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p4q48.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p4q49.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p4q61.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p4q62.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p4q63.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p5q7.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p5q15.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p5q30.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p5q39.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p5q40.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p5q66.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p5q67.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p6q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p6q16.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p6q17.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p6q34.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p6q57.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p6q58.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p6q59.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p6q69.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p6q70.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p6q79.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p6q80.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p7q1.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p7q8.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p7q18.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p7q26.png" },
+    { options: ["a", "b", "c", "d"], answer: 0, image: "p7q27.png" },
+    { options: ["a", "b", "c", "d"], answer: 2, image: "p7q28.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p7q29.png" },
+    { options: ["a", "b", "c", "d"], answer: 3, image: "p7q32.png" },
+    { options: ["a", "b", "c", "d"], answer: 1, image: "p7q58.png" },
+  ];
+
+  let currentQuestionIndex = 0;
+  let userAnswers = Array(questions.length).fill(null);
+
+  // Preload all quiz images
+  const preloadedImages = {};
+  function preloadImages() {
+    questions.forEach((question) => {
+      const img = new Image();
+      img.src = `upload/${question.image}`;
+      preloadedImages[question.image] = img;
+    });
+  }
+
+      let subjectRanges = [
+      { name: "Botany", start: 0, end: 30 },
+      { name: "Zoology", start: 31, end: 61 },
+      { name: "Chemistry", start: 62, end: 99 },
+      { name: "Physics", start: 100, end: 140 },
+    ];
+
+    let markedCounts = Array(subjectRanges.length).fill(0);
+  
+  // Function to update the button text for the subjects
+  function updateSubjectButtons() {
+    const subjectButtons = document.querySelectorAll(".subject-button");
+    subjectButtons.forEach((button, index) => {
+      const { name, start, end } = subjectRanges[index];
+      const totalQuestions = end - start + 1;
+      const markedQuestions = markedCounts[index];
+      button.textContent = `${name} ${markedQuestions}/${totalQuestions}`;
+    });
+  }
+
+  function trackMarkedAnswers() {
+    markedCounts = Array(subjectRanges.length).fill(0);
+    questions.forEach((_, questionIndex) => {
+      const isAnswered = userAnswers[questionIndex] !== null;
+      if (isAnswered) {
+        const subjectIndex = subjectRanges.findIndex(
+          ({ start, end }) => questionIndex >= start && questionIndex <= end
+        );
+        if (subjectIndex >= 0) {
+          markedCounts[subjectIndex]++;
+        }
+      }
+    });
+    updateSubjectButtons();
+  }
+
+  function renderQuiz() {
+    const quizContainer = document.getElementById("root");
+    const questionNumber = `Q${currentQuestionIndex + 1}`;
+    const questionImage = preloadedImages[questions[currentQuestionIndex].image].src;
+    const options = questions[currentQuestionIndex].options
+      .map(
+        (option, index) => `
+        <div>
+          <input type="radio" id="option${index}" name="option" value="${index}" 
+          ${userAnswers[currentQuestionIndex] === index ? "checked" : ""}>
+          <label for="option${index}">${option}</label>
+        </div>`
+      )
+      .join("");
+  
+    quizContainer.innerHTML = `
+      <div class="quiz-container">
+        <h2>${questionNumber}</h2>
+        <img id="questionImage" src="${questionImage}" alt="Question Image" />
+        <div class="options">${options}</div>
+        <button id="clearOptionBtn" class="clear-option-button">Clear Option</button>
+        <div class="navigation-buttons">
+          <button id="prevBtn">Previous</button>
+          <button id="nextBtn">Next</button>
+          <button id="submitBtn">Submit</button>
+        </div>
+        <div class="countdown-container">
+          <span id="countdown">150:00</span>
+        </div>
+      </div>
+    `;
+  
+    document.getElementById("prevBtn").onclick = handlePrev;
+    document.getElementById("nextBtn").onclick = handleNext;
+    document.getElementById("submitBtn").onclick = submitQuiz;
+    document.getElementById("clearOptionBtn").onclick = clearOption; // Attach the clear option function
+    updateNavigationButtons();
+    trackMarkedAnswers(); // Update subject buttons
+  }
+
+  function clearOption() {
+    // Uncheck the selected option
+    const selectedOption = document.querySelector("input[name='option']:checked");
+    if (selectedOption) {
+      selectedOption.checked = false;
+    }
+    // Clear the stored answer for the current question
+    userAnswers[currentQuestionIndex] = null;
+    trackMarkedAnswers(); // Update subject buttons
+  }
+
+  function updateNavigationButtons() {
+    document.getElementById("prevBtn").style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+    document.getElementById("nextBtn").style.display = currentQuestionIndex === questions.length - 1 ? "none" : "inline-block";
+    document.getElementById("submitBtn").style.display = currentQuestionIndex === questions.length - 1 ? "inline-block" : "none";
+  }
+
+  function startCountdown(duration) {
+    let timer = duration;
+    setInterval(() => {
+      const minutes = Math.floor(timer / 60);
+      const seconds = timer % 60;
+      document.getElementById("countdown").textContent = `${minutes < 10 ? "0" : ""}${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+      if (--timer < 0) {
+        window.location.href = "index.html";
+      }
+    }, 1000);
+  }
+
+  let hiddenCount = 0;
+  const maxHiddenCount = 4;
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      hiddenCount++;
+      console.log("Page hidden/minimized:", hiddenCount);
+
+      if (hiddenCount >= maxHiddenCount) {
+        alert("You have minimized the page too many times. The test is over.");
+        window.location.href = "index.html";
+      }
+    }
+  });
+
+  let quizSubmitted = false;
+  async function submitQuiz() {
+    const selectedOption = document.querySelector("input[name='option']:checked");
+    if (selectedOption) {
+      userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+    }
+
+    let score = 0;
+    const correctAnswers = [];
+    const wrongAnswer = [];
+    for (let i = 0; i < questions.length; i++) {
+      if (userAnswers[i] === questions[i].answer) {
+        score += 4;
+        correctAnswers.push(i+1);
+      } else if (userAnswers[i] !== null) {
+        score -= 1;
+        wrongAnswer.push(i+1);
+      }
+    }
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const userEmail = user.email;
+
+      try {
+        const docRef = await addDoc(collection(db, "answer"), {
+          email: userEmail,
+          score: score,
+          correctAnswers: correctAnswers,
+          wrongAnswer: wrongAnswer,
+        });
+        console.log("Document written with ID: ", docRef.id);
+        quizSubmitted = true;
+        alert("Quiz submitted! Your score: " + score +"/564");
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error("Error writing document: ", error);
+        alert("Failed to submit quiz: " + error.message);
+      }
+    } else {
+      alert("User is not authenticated!");
+    }
+  }
+
+  function handleNext() {
+    const selectedOption = document.querySelector("input[name='option']:checked");
+    if (selectedOption) {
+      userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+    }
+    if (currentQuestionIndex < questions.length - 1) {
+      currentQuestionIndex++;
+      renderQuiz();
+    }
+  }
+
+  function handlePrev() {
+    const selectedOption = document.querySelector("input[name='option']:checked");
+    if (selectedOption) {
+      userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+    }
+    if (currentQuestionIndex > 0) {
+      currentQuestionIndex--;
+      renderQuiz();
+    }
+  }
+
+  function goToQuestion(index) {
+    currentQuestionIndex = index;
+    renderQuiz();
+    trackMarkedAnswers(); // Update subject buttons on navigation
+  }
+  
+  document.querySelectorAll(".subject-button").forEach((button, index) => {
+    const { start } = subjectRanges[index];
+    button.onclick = () => goToQuestion(start);
+  });
+
+  window.onload = function () {
+    preloadImages();  // Preload images on page load
+    renderQuiz();
+    startCountdown(150 * 60);
+    updateSubjectButtons(); // Update subject buttons initially
+  };
+
+    // Set up subject buttons with data attributes for easier selection
+  document.querySelectorAll(".subject-button").forEach((button, index) => {
+    button.dataset.subject = Object.keys(subjectRanges)[index];
+    button.onclick = () => goToQuestion(subjectRanges[button.dataset.subject].start);
+    updateSubjectButtons(); // Update button text initially
+  });
+
+  document.querySelector(".subject-button:nth-child(1)").onclick = () => goToQuestion(0);  // Botany
+  document.querySelector(".subject-button:nth-child(2)").onclick = () => goToQuestion(31);  // Zoology
+  document.querySelector(".subject-button:nth-child(3)").onclick = () => goToQuestion(62);  // Chemistry
+  document.querySelector(".subject-button:nth-child(4)").onclick = () => goToQuestion(100); // Physics
+
+  window.addEventListener("beforeunload", function (e) {
+    if (quizSubmitted) return;
+    const message = "Your test will end and the result will not be stored. Click 'Yes' to leave the page, or 'No' to continue the test.";
+    e.preventDefault();
+    e.returnValue = message;
+    return message;
+  });
+</script>
+  </head>
+  <body>
+    <div class="button-container">
+      <button class="subject-button">Botany</button>
+      <button class="subject-button">Zoology</button>
+      <button class="subject-button">Chemistry</button>
+      <button class="subject-button">Physics</button>
+    </div>
+    <div id="root"></div>
+  </body>
+</html>
