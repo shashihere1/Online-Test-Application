@@ -23,13 +23,8 @@ Deployment: Firebase Hosting
 Installation
 Clone the repository:
 
-bash
-Copy code
 git clone https://github.com/shashihere1/online-test-application.git
 Navigate to the project folder:
-
-bash
-Copy code
 cd online-test-app
 Set up Firebase:
 
