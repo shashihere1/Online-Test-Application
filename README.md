@@ -1,16 +1,23 @@
 # Online-Test-Application
 
 #Overview
+
 This project is a real-time Online Test Application built using HTML, CSS, JavaScript, and Firebase. It features user authentication and authorization for secure access and allows users to participate in quizzes with multiple subjects. The app also includes functionality for password recovery with OTP-based authentication.
+![Screenshot 2024-11-22 120841](https://github.com/user-attachments/assets/4c377803-0d88-459b-8e2f-8abf189a782c)
 
 #Features
 User Authentication: Sign-up, login, and forgot password functionality using Firebase Authentication.
 OTP-based Password Reset: Users can reset their passwords securely through an email-based OTP system using EmailJS.
+![Screenshot 2024-11-22 120912](https://github.com/user-attachments/assets/e40b7a31-dc59-42ba-bbad-c708d64d8569)
+![Screenshot 2024-11-22 120953](https://github.com/user-attachments/assets/b68d5c77-facf-4aa3-a0fe-50c7f021dfb0)
+
 #Quiz Management:
 Multiple-choice questions organized by subject.
 Question navigation and clear selection functionality.
 Real-time tracking of marked answers by subject.
 Countdown timer for quiz completion.
+![Screenshot 2024-11-22 121114](https://github.com/user-attachments/assets/20a8b6ef-406d-4cfc-8bfd-bbb0cb7845df)
+
 User Progress:
 Local storage is used to track user sessions.
 Responses are recorded and can be submitted for evaluation.
